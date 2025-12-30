@@ -1,3 +1,34 @@
+// 在 registerUser 触发前的校验逻辑
+function validateRegister(username, password, confirm) {
+    const errorMsg = document.getElementById('errorMsg');
+
+    // 1. 长度校验：8-16位
+    if (password.length < 8 || password.length > 16) {
+        errorMsg.innerText = "错误：密码长度需在8-16位之间！";
+        return false;
+    }
+
+    // 2. 复杂度校验：至少包含两种字符（数字、字母、符号）
+    const hasNumber = /\d/.test(password);
+    const hasAlpha = /[a-zA-Z]/.test(password);
+    const hasSymbol = /.[!,@,#,$,%,^,&,*,?,_,~,-,(,)]/.test(password);
+    const typesCount = [hasNumber, hasAlpha, hasSymbol].filter(Boolean).length;
+
+    if (typesCount < 2) {
+        errorMsg.innerText = "错误：密码需包含数字、字母或符号中的至少两种！";
+        return false;
+    }
+
+    // 3. 一致性校验
+    if (password !== confirm) {
+        errorMsg.innerText = "错误：两次输入的密码不一致！";
+        return false;
+    }
+
+    errorMsg.innerText = ""; // 清空错误
+    return true;
+}
+
 // 注册请求
 async function registerUser(username, password) {
     try {
@@ -22,18 +53,34 @@ async function registerUser(username, password) {
     }
 }
 
+// 在页面加载时运行
+window.onload = function() {
+    updateNavUI();   // 更新导航栏并显示欢迎语
+    initHomePage();  // 加载分类长廊
+};
+
 async function updateNavUI() {
     const userArea = document.getElementById('userArea');
-    const response = await fetch('/api/me'); // 检查登录状态
-    const result = await response.json();
+    try {
+        const response = await fetch('/api/me');
+        const result = await response.json();
 
-    if (result.code === 200) {
-        // 登录成功后显示：用户名 | 购物车
-        userArea.innerHTML = `
-            <span class="username">欢迎，${result.data.username}</span>
-            <a href="basket.html" class="cart-link">🛒 购物车</a>
-            <a href="#" onclick="logout()">退出</a>
-        `;
+        if (result.code === 200) {
+            // 已登录：显示购物车和退出
+            userArea.innerHTML = `
+                <a href="basket.html" class="nav-item">🛒 购物车</a>
+                <a href="#" onclick="logout()" class="nav-item">退出</a>
+            `;
+        } else {
+            // 未登录：显示登录和注册，但“欢迎”大字依然在页面上
+            userArea.innerHTML = `
+                <a href="login.html" class="nav-item">登录</a>
+                <a href="register.html" class="nav-item">注册</a>
+            `;
+        }
+    } catch (e) {
+        // 网络错误或后端未启动时的兜底
+        userArea.innerHTML = `<a href="login.html" class="nav-item">登录</a>`;
     }
 }
 

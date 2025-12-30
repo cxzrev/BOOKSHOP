@@ -300,3 +300,32 @@ button {
     margin-right: 15px;
     font-weight: bold;
 }
+
+.huge-welcome {
+    font-size: 80px;      /* 特大字号 */
+    font-weight: 900;
+    text-align: center;
+    letter-spacing: 20px; /* 字间距拉开，更有仪式感 */
+    color: #2c3e50;
+    margin-top: 50px;
+    animation: fadeIn 2s; /* 简单的渐显效果 */
+}
+
+.hero-subtitle {
+    text-align: center;
+    color: #7f8c8d;
+    font-size: 18px;
+    margin-top: -10px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.input-hint {
+    display: block;
+    color: gray;
+    font-size: 12px;
+    margin-top: 4px;
+}
