@@ -1,0 +1,302 @@
+/* 简单的导航栏样式 */
+.menu-bar {
+    background-color: #333;
+    padding: 15px;
+    color: white;
+}
+.menu-bar a {
+    color: white;
+    margin-right: 20px;
+    text-decoration: none;
+}
+.menu-bar a:hover {
+    text-decoration: underline;
+}
+/* 按钮样式 */
+button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.form-container {
+    width: 300px;
+    margin: 50px auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+.input-group { margin-bottom: 15px; }
+.input-group label { display: block; margin-bottom: 5px; }
+.input-group input { width: 100%; padding: 8px; box-sizing: border-box; }
+.extra-options { margin-top: 10px; font-size: 0.9em; }
+
+.container { width: 80%; margin: 0 auto; padding: 20px; }
+.search-box { display: flex; gap: 10px; margin-bottom: 30px; }
+.search-box input { flex: 1; padding: 12px; font-size: 16px; border: 1px solid #ddd; }
+
+/* 分类行容器 */
+.cat-row { margin-bottom: 40px; }
+
+.cat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 5px solid #d9534f;
+    padding-left: 15px;
+    margin-bottom: 15px;
+}
+
+.cat-name { font-size: 20px; font-weight: bold; color: #333; }
+.more-link { font-size: 14px; color: #666; text-decoration: none; }
+
+/* 横向长廊布局 */
+.book-scroller {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto; /* 关键：超出时允许横向滚动 */
+    padding: 10px 5px;
+}
+
+/* 首页小型卡片样式 */
+.mini-book-card {
+    min-width: 140px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+
+.mini-book-card:hover { transform: translateY(-5px); }
+
+.mini-cover {
+    height: 120px;
+    background: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 40px;
+    font-weight: bold;
+    border-radius: 8px 8px 0 0;
+}
+
+.mini-info { padding: 8px; text-align: center; }
+.mini-info h4 { font-size: 14px; margin: 5px 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.mini-price { color: #e4393c; font-weight: bold; }
+.stock-tip { font-size: 12px; color: red; font-weight: bold; }
+
+/* 缺货卡片变灰 */
+.out-of-stock { opacity: 0.6; }
+
+
+/* 结果网格布局 */
+.book-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+/* 图书卡片样式 */
+.book-card {
+    position: relative;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+    transition: all 0.3s;
+}
+.book-cover-placeholder {
+    height: 150px;
+    background-color: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 60px;
+    font-weight: bold;
+    color: #2c3e50;
+    border-bottom: 1px solid #eee;
+}
+.book-info-brief { padding: 10px; }
+
+.price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+/* 右下角加号按钮 */
+.add-to-cart-plus {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #d9534f;
+    color: white;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    line-height: 1;
+}
+
+.add-to-cart-plus:hover { background-color: #c9302c; }
+
+
+.book-card:hover { transform: translateY(-5px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+.book-card h3 { font-size: 18px; margin: 0 0 10px 0; height: 45px; overflow: hidden; }
+.price { color: #e4393c; font-weight: bold; }
+.detail-btn {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 5px 10px;
+    background-color: #5bc0de;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+}
+
+.detail-container {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    margin-top: 20px;
+}
+.book-info-layout { display: flex; gap: 40px; }
+.info-text h1 { margin-top: 0; color: #333; }
+.author { color: #666; font-size: 1.1em; }
+.price { color: #e4393c; font-size: 1.5em; font-weight: bold; }
+.desc { line-height: 1.6; color: #555; background: #fdfdfd; padding: 15px; border-left: 4px solid #eee; }
+.action-area { margin-top: 20px; padding: 20px; background: #f9f9f9; border-radius: 8px; }
+.action-area button { background-color: #ff9900; font-size: 1.1em; border-radius: 4px; }
+.action-area button:hover { background-color: #e68a00; }
+
+
+.basket-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+.basket-table th, .basket-table td { border-bottom: 1px solid #ddd; padding: 12px; text-align: left; }
+.basket-table th { background-color: #f4f4f4; }
+.basket-table input[type="number"] { width: 50px; padding: 5px; }
+
+.basket-summary { margin-top: 30px; text-align: right; background: #fff; padding: 20px; border-radius: 8px; }
+.primary-btn { background-color: #d9534f; border-radius: 4px; font-size: 1.2em; margin-left: 10px; }
+.secondary-btn { background-color: #666; border-radius: 4px; }
+
+.book-row {
+    display: flex;
+    overflow-x: auto; /* 支持左右滑动 */
+    gap: 15px;
+    padding-bottom: 10px;
+}
+.mini-card {
+    min-width: 150px;
+    border: 1px solid #eee;
+    padding: 10px;
+    text-align: center;
+}
+.category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 5px solid #d9534f;
+    padding-left: 10px;
+    margin: 20px 0 10px 0;
+}
+
+/* 分类页容器 */
+.category-container {
+    display: flex;
+    max-width: 1200px;
+    margin: 20px auto;
+    gap: 30px;
+}
+
+/* 侧边栏样式 */
+.side-nav {
+    width: 200px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    height: fit-content;
+}
+.side-nav h3 { border-bottom: 2px solid #d9534f; padding-bottom: 10px; }
+.side-nav ul { list-style: none; padding: 0; }
+.side-nav li {
+    padding: 12px 10px;
+    cursor: pointer;
+    border-bottom: 1px inset #eee;
+    transition: 0.3s;
+}
+.side-nav li:hover { background: #fff; color: #d9534f; padding-left: 15px; }
+.side-nav li.active { background: #d9534f; color: white; border-radius: 4px; }
+
+/* 内容区 */
+.category-content { flex: 1; }
+
+/* 微型按钮样式 */
+.add-mini-btn {
+    background: #5cb85c;
+    font-size: 0.8em;
+    padding: 5px 8px;
+    margin-left: 5px;
+}
+
+/* 导航栏主体：使用 Flex 布局并居中对齐 */
+.navbar {
+    display: flex;
+    justify-content: space-between; /* 左右两端对齐，中间留空 */
+    align-items: center;           /* 垂直方向居中 */
+    background-color: #2c3e50;    /* 稍微高级一点的深蓝色 */
+    padding: 10px 5%;              /* 左右留出 5% 的呼吸空间 */
+    color: white;
+}
+
+/* 统一链接样式 */
+.nav-item {
+    color: white;
+    text-decoration: none;
+    margin: 0 15px;
+    font-size: 16px;
+    transition: color 0.3s;
+}
+
+.nav-item:hover {
+    color: #3498db; /* 鼠标悬停变浅蓝 */
+}
+
+/* 中间搜索框组 */
+.search-group {
+    display: flex;
+    width: 400px; /* 给搜索框一个固定宽度 */
+}
+
+.search-group input {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px 0 0 4px; /* 左边圆角 */
+    outline: none;
+}
+
+.search-group button {
+    padding: 8px 20px;
+    background-color: #3498db;
+    border: none;
+    color: white;
+    border-radius: 0 4px 4px 0; /* 右边圆角 */
+    cursor: pointer;
+}
+
+/* 右侧用户区 */
+.nav-right {
+    display: flex;
+    align-items: center;
+}
+
+.username {
+    margin-right: 15px;
+    font-weight: bold;
+}

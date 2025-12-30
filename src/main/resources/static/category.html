@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>图书分类浏览 - 悦读网上书店</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-left">
+    <a href="index.html" class="nav-item">首页</a>
+    <a href="category.html" class="nav-item">全部分类</a>
+  </div>
+
+  <div class="nav-center">
+    <div class="search-group">
+      <input type="text" id="navSearchInput" placeholder="书名 / 作者 / ISBN">
+      <button onclick="navSearch()">搜索</button>
+    </div>
+  </div>
+
+  <div class="nav-right" id="userArea">
+    <a href="login.html" class="nav-item">登录</a>
+    <a href="register.html" class="nav-item">注册</a>
+  </div>
+</nav>
+
+<div class="category-container">
+  <aside class="side-nav">
+    <h3>图书分类</h3>
+    <ul id="categoryList">
+      <li onclick="switchCategory('all')">全部图书</li>
+      <li onclick="switchCategory('philosophy')">哲学宗教</li>
+      <li onclick="switchCategory('social')">社会科学总论</li>
+      <li onclick="switchCategory('politics')">政治、法律</li>
+      <li onclick="switchCategory('military')">军事</li>
+      <li onclick="switchCategory('economy')">经济</li>
+      <li onclick="switchCategory('marxism')">马列毛邓</li>
+    </ul>
+  </aside>
+
+  <main class="category-content">
+    <h2 id="categoryTitle">正在加载...</h2>
+    <div id="categoryBookList" class="book-grid">
+    </div>
+  </main>
+</div>
+
+<script src="js/main.js"></script>
+<script>
+  window.onload = function() {
+    updateNavUI(); // 更新导航栏用户状态
+    const urlParams = new URLSearchParams(window.location.search);
+    const cat = urlParams.get('type') || 'all';
+    switchCategory(cat);
+  };
+</script>
+</body>
+</html>

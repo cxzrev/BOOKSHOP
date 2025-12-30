@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>用户登录 - 悦读网上书店</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav class="navbar">
+    <div class="nav-left">
+        <a href="index.html" class="nav-item">首页</a>
+        <a href="category.html" class="nav-item">全部分类</a>
+    </div>
+
+    <div class="nav-center">
+        <div class="search-group">
+            <input type="text" id="navSearchInput" placeholder="书名 / 作者 / ISBN">
+            <button onclick="navSearch()">搜索</button>
+        </div>
+    </div>
+
+    <div class="nav-right" id="userArea">
+        <a href="login.html" class="nav-item">登录</a>
+        <a href="register.html" class="nav-item">注册</a>
+    </div>
+</nav>
+<div class="form-container">
+    <h2>用户登录</h2>
+    <form id="loginForm">
+        <div class="input-group">
+            <label>用户名：</label>
+            <input type="text" id="loginUsername" required>
+        </div>
+        <div class="input-group">
+            <label>密码：</label>
+            <input type="password" id="loginPassword" required>
+        </div>
+        <button type="submit">登录</button>
+    </form>
+    <div class="extra-options">
+        <a href="#" onclick="alert('请联系管理员: admin@bookstore.com')">忘记密码？</a>
+    </div>
+</div>
+
+<script src="js/main.js"></script>
+<script>
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const u = document.getElementById('loginUsername').value;
+        const p = document.getElementById('loginPassword').value;
+        loginUser(u, p);
+    });
+</script>
+</body>
+</html>

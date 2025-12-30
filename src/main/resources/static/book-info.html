@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>图书详情 - 悦读网上书店</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav class="navbar">
+    <div class="nav-left">
+        <a href="index.html" class="nav-item">首页</a>
+        <a href="category.html" class="nav-item">全部分类</a>
+    </div>
+
+    <div class="nav-center">
+        <div class="search-group">
+            <input type="text" id="navSearchInput" placeholder="书名 / 作者 / ISBN">
+            <button onclick="navSearch()">搜索</button>
+        </div>
+    </div>
+
+    <div class="nav-right" id="userArea">
+        <a href="login.html" class="nav-item">登录</a>
+        <a href="register.html" class="nav-item">注册</a>
+    </div>
+</nav>
+
+<main class="container">
+    <div id="bookDetail" class="detail-container">
+        <p>正在加载图书信息...</p>
+    </div>
+</main>
+
+<script src="js/main.js"></script>
+<script>
+    // 页面加载时，自动获取 URL 中的 id 并请求数据
+    window.onload = function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const bookId = urlParams.get('id'); // 获取 ?id=xxx
+        if (bookId) {
+            loadBookDetail(bookId);
+        } else {
+            document.getElementById('bookDetail').innerHTML = "<p>错误：未指定图书ID。</p>";
+        }
+    };
+</script>
+</body>
+</html>

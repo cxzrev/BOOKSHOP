@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>图书搜索 - 悦读网上书店</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav class="navbar">
+    <div class="nav-left">
+        <a href="index.html" class="nav-item">首页</a>
+        <a href="category.html" class="nav-item">全部分类</a>
+    </div>
+
+    <div class="nav-center">
+        <div class="search-group">
+            <input type="text" id="navSearchInput" placeholder="书名 / 作者 / ISBN">
+            <button onclick="navSearch()">搜索</button>
+        </div>
+    </div>
+
+    <div class="nav-right" id="userArea">
+        <a href="login.html" class="nav-item">登录</a>
+        <a href="register.html" class="nav-item">注册</a>
+    </div>
+</nav>
+
+<main class="container">
+    <h2>搜索图书</h2>
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="输入书名、作者或ISBN...">
+        <button onclick="executeSearch()">搜索</button>
+    </div>
+
+    <div id="resultsInfo" style="margin-top: 20px;"></div>
+
+    <div id="bookList" class="book-grid">
+    </div>
+</main>
+
+<script src="js/main.js"></script>
+<script>
+    // 页面加载时先检查登录状态
+    window.onload = checkLoginStatus;
+
+    // 处理回车搜索
+    document.getElementById('searchInput').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') executeSearch();
+    });
+</script>
+</body>
+</html>
