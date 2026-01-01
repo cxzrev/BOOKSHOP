@@ -1,33 +1,39 @@
-// 在 registerUser 触发前的校验逻辑
-function validateRegister(username, password, confirm) {
-    const errorMsg = document.getElementById('errorMsg');
+const HOME_CATEGORIES = [
+    { id: 'marxism', name: '马列毛邓、思想理论' },
+    { id: 'philosophy', name: '哲学宗教' },
+    { id: 'social', name: '社会科学总论' },
+    { id: 'politics', name: '政治、法律' },
+    { id: 'economy', name: '经济' },
+    { id: 'military', name: '军事' }
+];
 
-    // 1. 长度校验：8-16位
-    if (password.length < 8 || password.length > 16) {
-        errorMsg.innerText = "错误：密码长度需在8-16位之间！";
-        return false;
+window.addEventListener('DOMContentLoaded', async () => {
+    // 1. 同步登录状态 (首页和所有页面)
+    await checkLoginStatus();
+
+    // 2. 首页逻辑：加载彩色长廊
+    const homeSections = document.getElementById('homeCategorySections');
+    if (homeSections) {
+        // 先清空，再加载，双重保险
+        homeSections.innerHTML = '';
+        await initHomePage();
     }
 
-    // 2. 复杂度校验：至少包含两种字符（数字、字母、符号）
-    const hasNumber = /\d/.test(password);
-    const hasAlpha = /[a-zA-Z]/.test(password);
-    const hasSymbol = /.[!,@,#,$,%,^,&,*,?,_,~,-,(,)]/.test(password);
-    const typesCount = [hasNumber, hasAlpha, hasSymbol].filter(Boolean).length;
-
-    if (typesCount < 2) {
-        errorMsg.innerText = "错误：密码需包含数字、字母或符号中的至少两种！";
-        return false;
+    // 3. 搜索页逻辑：自动触发搜索
+    const urlParams = new URLSearchParams(window.location.search);
+    const q = urlParams.get('q');
+    if (q && typeof performSearch === 'function') {
+        performSearch(q);
     }
 
-    // 3. 一致性校验
-    if (password !== confirm) {
-        errorMsg.innerText = "错误：两次输入的密码不一致！";
-        return false;
+    // 4. 给搜索框绑定回车事件
+    const navInput = document.getElementById('navSearchInput');
+    if (navInput) {
+        navInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') window.doNavSearch();
+        });
     }
-
-    errorMsg.innerText = ""; // 清空错误
-    return true;
-}
+});
 
 // 注册请求
 async function registerUser(username, password) {
@@ -52,12 +58,6 @@ async function registerUser(username, password) {
         console.error("请求失败", e);
     }
 }
-
-// 在页面加载时运行
-window.onload = function() {
-    updateNavUI();   // 更新导航栏并显示欢迎语
-    initHomePage();  // 加载分类长廊
-};
 
 async function updateNavUI() {
     const userArea = document.getElementById('userArea');
@@ -84,93 +84,138 @@ async function updateNavUI() {
     }
 }
 
-// 搜索栏跳转逻辑
-function navSearch() {
-    const q = document.getElementById('navSearchInput').value;
-    if (q) window.location.href = `search.html?q=${encodeURIComponent(q)}`;
-}
-
 // 登录请求
 async function loginUser(username, password) {
-    const response = await fetch('/api/login', {
+    const res = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
     });
-    const result = await response.json();
+    const result = await res.json();
     if (result.code === 200) {
-        // 登录成功，跳转到搜索页 [cite: 197]
-        window.location.href = "search.html";
+        window.location.href = "index.html";
+        return true;
     } else {
-        alert("登录失败：" + result.message); // [cite: 197]
+        alert(result.message);
+        return false;
     }
 }
 
-// 1. 定义首页要展示的分类列表（对应你要求的分类）
-const HOME_CATEGORIES = [
-    { id: 'marxism', name: '马列毛邓' },
-    { id: 'philosophy', name: '哲学宗教' },
-    { id: 'social', name: '社会科学总论' },
-    { id: 'politics', name: '政治、法律' },
-    { id: 'economy', name: '经济' },
-    { id: 'military', name: '军事' }
-];
-
-// 2. 首页初始化函数
 async function initHomePage() {
     const container = document.getElementById('homeCategorySections');
-    if (!container) return;
+    if (!container) return; // 安全检查
+    container.innerHTML = ''; // 清空之前的加载提示
+
+    const colors = { 'marxism':'#d32f2f', 'philosophy':'#fbc02d', 'social':'#616161', 'politics':'#1976d2', 'economy':'#f57c00', 'military':'#388e3c' };
 
     for (const cat of HOME_CATEGORIES) {
         try {
-            // 向后端请求该分类下的书籍
-            const response = await fetch(`/api/books/category?type=${cat.id}`);
-            const result = await response.json();
+            const res = await fetch(`/api/books/category?type=${cat.id}`);
+            const result = await res.json();
 
             if (result.code === 200 && result.data.length > 0) {
-                // 创建一个分类行
-                const sectionHtml = `
-                    <div class="cat-row">
-                        <div class="cat-header">
-                            <span class="cat-name">${cat.name}</span>
-                            <a href="category.html?type=${cat.id}" class="more-link">探索更多 ></a>
-                        </div>
-                        <div class="book-scroller">
-                            ${result.data.slice(0, 5).map(book => renderHomeBookCard(book)).join('')}
-                        </div>
+                const section = document.createElement('div');
+                section.className = 'cat-row';
+                // 强制去掉下划线的内联样式
+                section.innerHTML = `
+                    <div class="cat-header">
+                        <span>${cat.name}</span>
+                        <a href="category.html?type=${cat.id}">探索更多 ></a>
                     </div>
-                `;
-                container.innerHTML += sectionHtml;
+                    <div class="book-scroller">
+                        ${result.data.slice(0, 5).map(book => `
+                            <div class="mini-book-card">
+                                <a href="book-info.html?id=${book.bookId || book.book_id}" style="text-decoration:none !important; color:inherit; border:none;">
+                                    <div style="height:150px; background:${colors[cat.id] || '#999'}; display:flex; align-items:center; justify-content:center; color:#fff; font-size:40px; font-weight:bold; border-radius:8px;">
+                                        ${book.title[0]}
+                                    </div>
+                                    <div style="padding:10px; text-align:center;">
+                                        <h4 style="margin:0; color:#333; text-decoration:none !important;">${book.title}</h4>
+                                    </div>
+                                </a>
+                            </div>
+                        `).join('')}
+                    </div>`;
+                container.appendChild(section);
             }
         } catch (e) {
-            console.error(`加载分类 ${cat.name} 失败`, e);
+            console.error(`加载分类 ${cat.id} 失败:`, e);
         }
     }
 }
 
-// 3. 专为首页长廊设计的简化版卡片渲染（点击封面进详情页）
-function renderHomeBookCard(book) {
-    const firstChar = book.title.charAt(0);
-    const isOutOfStock = book.stock <= 0; // [cite: 207]
+async function syncUserStatus() {
+    const userArea = document.getElementById('userArea');
+    if (!userArea) return false;
+
+    try {
+        const res = await fetch('/api/me');
+        const result = await res.json();
+
+        if (result.code === 200 && result.data.loggedIn) {
+            userArea.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <a href="orders.html" style="text-decoration: none; display: flex; align-items: center;">
+                        <div title="查看我的订单" style="width: 32px; height: 32px; border-radius: 50%; background: #fff; color: #333; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 1px solid #ddd; cursor: pointer;">
+                            ${result.data.username[0]}
+                        </div>
+                    </a>
+                    <span style="color: white;">${result.data.username}</span>
+                    <a href="basket.html" style="color: white; text-decoration: none;">🛒 购物车</a>
+                    <a href="javascript:void(0)" onclick="logoutUser()" style="color: #ffcccc; text-decoration: none;">退出</a>
+                </div>`;
+            return true;
+        } else {
+            userArea.innerHTML = `
+                <a href="login.html" class="nav-item">登录</a>
+                <a href="register.html" class="nav-item">注册</a>`;
+            return false;
+        }
+    } catch (e) {
+        return false;
+    }
+}
+// 统一的退出逻辑
+window.handleLogout = async function() {
+    await fetch('/api/logout', { method: 'POST' });
+    window.location.href = "index.html"; // 强制回首页清空状态
+};
+
+function renderHomeBookCard(book, catId) {
+    const bid = book.bookId || book.book_id;
+    const colors = {
+        'ML': '#d32f2f', 'ZX': '#fbc02d', 'SH': '#616161',
+        'ZZ': '#1976d2', 'JJ': '#f57c00', 'JS': '#388e3c', 'default': '#999'
+    };
+    // 使用 getCatId 获取颜色 Key
+    const colorKey = getCatId(book.category) || 'default';
+    const bgColor = colors[colorKey];
 
     return `
-        <div class="mini-book-card ${isOutOfStock ? 'out-of-stock' : ''}">
-            <a href="book-info.html?id=${book.book_id}">
-                <div class="mini-cover">${firstChar}</div>
-                <div class="mini-info">
-                    <h4 title="${book.title}">${book.title}</h4>
-                    <p class="mini-price">￥${book.price.toFixed(2)}</p>
-                    ${isOutOfStock ? '<span class="stock-tip">缺货</span>' : ''}
+        <div class="mini-book-card" style="box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden; background: #fff; min-width: 140px;">
+            <a href="book-info.html?id=${bid}" style="text-decoration: none !important;">
+                <div class="mini-cover" style="height: 150px; background-color: ${bgColor}; display: flex; align-items: center; justify-content: center; color: white; font-size: 40px; font-weight: bold;">
+                    ${book.title[0]}
+                </div>
+                <div class="mini-info" style="padding: 10px; text-align: center;">
+                    <h4 style="margin: 0; font-size: 14px; color: #333; text-decoration: none !important;">${book.title}</h4>
                 </div>
             </a>
-        </div>
-    `;
+        </div>`;
 }
 
-// 在页面加载时启动
-if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/') {
-    window.onload = initHomePage;
+function getCatId(name) {
+    if (!name) return 'default';
+    if (name.includes('马列')) return 'marxism';
+    if (name.includes('哲学')) return 'philosophy';
+    if (name.includes('社会')) return 'social';
+    if (name.includes('政治')) return 'politics';
+    if (name.includes('经济')) return 'economy';
+    if (name.includes('军事')) return 'military';
+    return 'default';
 }
+// 挂载到 window 确保其他页面能用
+window.getCatId = getCatId;
 
 // 执行搜索功能
 async function executeSearch() {
@@ -215,51 +260,243 @@ async function executeSearch() {
     }
 }
 
-// 简单的登录状态检查（用于导航栏显示）
-async function checkLoginStatus() {
-    const authSpan = document.getElementById('nav-auth');
+async function performSearch(q) {
+    const resultsContainer = document.getElementById('searchResults');
+    resultsContainer.innerHTML = "<p style='text-align:center;'>正在搜索...</p>";
+
     try {
-        const response = await fetch('/api/me');
-        const result = await response.json();
+        const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+        const result = await res.json();
+
         if (result.code === 200) {
-            authSpan.innerHTML = `欢迎，${result.data.username} | <a href="#" onclick="logout()">退出</a>`;
-        } else {
-            authSpan.innerHTML = `<a href="login.html">登录</a> | <a href="register.html">注册</a>`;
+            if (result.data.length === 0) {
+                resultsContainer.innerHTML = "<p style='text-align:center;'>未找到相关书籍。</p>";
+                return;
+            }
+
+            resultsContainer.innerHTML = `
+                <div class="book-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 25px; padding: 20px;">
+                    ${result.data.map(book => renderSearchBookCard(book)).join('')}
+                </div>`;
         }
     } catch (e) {
-        authSpan.innerHTML = `<a href="login.html">登录</a>`;
+        resultsContainer.innerHTML = "<p>搜索失败，请稍后再试。</p>";
     }
 }
 
-// 获取图书详情并渲染
+function renderSearchBookCard(book) {
+    const bid = book.bookId || book.book_id;
+    const catId = getCatId(book.category); // 获取分类 ID
+    const colors = { 'marxism':'#d32f2f', 'philosophy':'#fbc02d', 'social':'#616161', 'politics':'#1976d2', 'economy':'#f57c00', 'military':'#388e3c', 'default':'#999' };
+
+    return `
+        <div class="search-book-card" style="background:#fff; border-radius:10px; box-shadow:0 4px 8px rgba(0,0,0,0.1); overflow:hidden; transition:0.3s;">
+            <a href="book-info.html?id=${bid}" style="text-decoration:none; color:inherit;">
+                <div style="height:200px; background:${colors[catId] || '#999'}; display:flex; align-items:center; justify-content:center; color:#fff; font-size:60px; font-weight:bold;">
+                    ${book.title[0]}
+                </div>
+                <div style="padding:15px;">
+                    <h4 style="margin:0 0 8px 0; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${book.title}</h4>
+                    <p style="margin:0; font-size:12px; color:#666;">${book.author}</p>
+                    <p style="margin:10px 0 0 0; color:#e4393c; font-weight:bold; font-size:18px;">￥${book.price.toFixed(2)}</p>
+                </div>
+            </a>
+        </div>`;
+}
+
+async function checkLoginStatus() {
+    const userArea = document.getElementById('userArea');
+    if (!userArea) return false; // 找不到容器也返回 false
+
+    try {
+        const res = await fetch('/api/me');
+        const result = await res.json();
+
+        if (result.code === 200 && result.data.loggedIn) {
+            // 渲染已登录 UI
+            userArea.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 32px; height: 32px; border-radius: 50%; background: #fff; color: #333; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 1px solid #ddd;">
+                        ${result.data.username[0]}
+                    </div>
+                    <span style="color: white;">${result.data.username}</span>
+                    <a href="basket.html" style="color: white; text-decoration: none;">🛒 购物车</a>
+                    <a href="javascript:void(0)" onclick="logoutUser()" style="color: #ffcccc; text-decoration: none;">退出</a>
+                </div>`;
+            return true;
+        } else {
+            userArea.innerHTML = `
+                <a href="login.html" class="nav-item">登录</a>
+                <a href="register.html" class="nav-item">注册</a>`;
+            return false;
+        }
+    } catch (e) {
+        console.error("状态同步失败:", e);
+        return false;
+    }
+}
+
+// main.js
+
+window.logoutUser = async function() {
+    if (!confirm("确定要退出登录吗？")) return;
+
+    try {
+        // 1. 请求后端退出接口
+        const res = await fetch('/api/logout', { method: 'POST' });
+        const result = await res.json();
+
+        if (res.ok || result.code === 200) {
+            // 2. 清理本地购物篮（按需，通常退出后清空比较安全）
+            localStorage.removeItem('book_basket');
+
+            alert("已安全退出");
+
+            // 3. 强制跳转回首页，刷新状态
+            window.location.href = "index.html";
+        } else {
+            alert("退出失败：" + (result.message || "未知错误"));
+        }
+    } catch (e) {
+        console.error("退出异常:", e);
+        // 即使后端请求失败，前端也强制刷新一次
+        window.location.reload();
+    }
+};
+
+window.doNavSearch = function() {
+    const navInput = document.getElementById('navSearchInput');
+    if (!navInput) return;
+
+    const query = navInput.value.trim();
+    if (query) {
+        // 跳转到 search.html 并带上查询参数 q
+        console.log("正在跳转搜索:", query);
+        window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+    }
+};
+
+// 获取购物车数据
+function getCart() {
+    const cart = localStorage.getItem('bookshop_cart');
+    return cart ? JSON.parse(cart) : [];
+}
+
+// 保存购物车数据
+function saveCart(cart) {
+    localStorage.setItem('bookshop_cart', JSON.stringify(cart));
+}
+
+// main.js
+
+window.addToCart = async function(bookId, quantity = 1) {
+    // 1. 登录校验
+    const res = await fetch('/api/me');
+    const auth = await res.json();
+    if (auth.code !== 200 || !auth.data.loggedIn) {
+        alert("请先登录再加入购物车");
+        window.location.href = "login.html";
+        return;
+    }
+
+    try {
+        // 2. 获取书籍详细信息用于展示（单价、书名等）
+        const bookRes = await fetch(`/api/book/${bookId}`);
+        const result = await bookRes.json();
+        if (result.code !== 200) return;
+        const book = result.data;
+
+        // 3. 读取本地购物篮
+        let basket = JSON.parse(localStorage.getItem('book_basket') || '[]');
+
+        // 检查是否已有该书
+        const itemIndex = basket.findIndex(item => item.bookId == bookId);
+        if (itemIndex > -1) {
+            basket[itemIndex].quantity += parseInt(quantity);
+        } else {
+            basket.push({
+                bookId: book.bookId || book.book_id,
+                title: book.title,
+                price: book.price,
+                quantity: parseInt(quantity)
+            });
+        }
+
+        // 4. 保存回本地
+        localStorage.setItem('book_basket', JSON.stringify(basket));
+        alert("已成功加入购物篮！");
+    } catch (e) {
+        console.error("加入购物篮失败", e);
+    }
+};
+
+// 2. 获取详情并渲染
 async function loadBookDetail(bookId) {
     const detailDiv = document.getElementById('bookDetail');
-    const response = await fetch(`/api/book/${bookId}`);
-    const result = await response.json();
+    try {
+        const response = await fetch(`/api/book/${bookId}`);
+        const result = await response.json();
 
-    if (result.code === 200) {
-        const book = result.data;
-        const isOutOfStock = book.stock <= 0;
+        if (result.code === 200) {
+            const book = result.data;
+            const isOutOfStock = book.stock <= 0;
 
-        detailDiv.innerHTML = `
-            <button onclick="window.history.back()" class="back-btn">← 返回上一页</button>
-            <div class="detail-layout">
-                <h1>${book.title}</h1>
-                <p>作者：${book.author} | ISBN：${book.isbn}</p>
-                <p class="price">价格：￥${book.price.toFixed(2)}</p>
-                <p>库存：<span style="color: ${isOutOfStock ? 'red' : 'green'}">${book.stock}</span></p>
-                <p class="desc">${book.description}</p>
-                
-                <div class="action-area">
-                    <input type="number" id="buyQty" value="1" min="1" ${isOutOfStock ? 'disabled' : ''}>
-                    <button id="addBtn" 
-                            onclick='addToCartHandler(${JSON.stringify(book)})' 
-                            ${isOutOfStock ? 'disabled class="btn-disabled"' : 'class="primary-btn"'}>
-                        ${isOutOfStock ? '库存不足' : '加入购物车'}
-                    </button>
-                </div>
-            </div>
-        `;
+            // 使用专门的 ID 绑定，而不是拼接字符串，防止 UI 渲染错误
+            detailDiv.innerHTML = `
+                    <button onclick="window.history.back()" class="back-btn">← 返回上一页</button>
+                    <div class="detail-layout">
+                        <div class="detail-cover-placeholder" style="background-color:#eee; width:200px; height:280px; display:flex; align-items:center; justify-content:center; font-size:80px; font-weight:bold; color:#666; margin-bottom:20px; border-radius:8px;">
+                            ${book.title[0]}
+                        </div>
+                        <h1>${book.title}</h1>
+                        <p>作者：${book.author} | ISBN：${book.isbn || 'N/A'}</p>
+                        <p class="price" style="font-size:24px; color:#e53935; font-weight:bold;">价格：￥${book.price.toFixed(2)}</p>
+                        <p>库存状态：<span style="color: ${isOutOfStock ? '#f44336' : '#4caf50'}; font-weight:bold;">
+                            ${isOutOfStock ? '缺货' : '现货 (' + book.stock + ')'}
+                        </span></p>
+                        <div class="desc-box" style="margin: 20px 0; line-height: 1.6; color: #666;">
+                            <strong>图书简介：</strong><br>${book.description || '暂无详细描述。'}
+                        </div>
+                        
+                        <div class="action-area" style="display: flex; gap: 10px; align-items: center;">
+                            <input type="number" id="buyQty" value="1" min="1" max="${book.stock}" 
+                                   style="width: 60px; padding: 8px; border: 1px solid #ddd;" ${isOutOfStock ? 'disabled' : ''}>
+                            <button id="addCartBtn" 
+                                    class="${isOutOfStock ? 'btn-disabled' : 'primary-btn'}"
+                                    ${isOutOfStock ? 'disabled' : ''}>
+                                ${isOutOfStock ? '暂时缺货' : '加入购物车'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+            // 绑定加入购物车事件（避免使用内联 onclick）
+            if (!isOutOfStock) {
+                document.getElementById('addCartBtn').addEventListener('click', () => {
+                    const qty = parseInt(document.getElementById('buyQty').value);
+                    addToCart(book, qty); // 调用 main.js 中的方法
+                });
+            }
+        } else {
+            detailDiv.innerHTML = `<p>未找到该图书 (${result.message})</p>`;
+        }
+    } catch (e) {
+        console.error("加载详情失败", e);
+        detailDiv.innerHTML = "<p>系统繁忙，请稍后再试。</p>";
+    }
+}
+
+async function handleAddToCart(bookId) {
+    // 1. 尝试获取页面上的数量输入框（如果你详情页有输入框的话）
+    const qtyInput = document.getElementById('buyQty');
+    const quantity = qtyInput ? parseInt(qtyInput.value) : 1;
+
+    // 2. 调用 main.js 中的 addToCart 函数
+    // 确保 main.js 中已定义 window.addToCart = addToCart;
+    const success = await addToCart(bookId, quantity);
+
+    if (success) {
+        alert("成功加入购物车！");
     }
 }
 
@@ -429,12 +666,6 @@ async function submitOrder() {
     }
 }
 
-function navSearch() {
-    const q = document.getElementById('navSearchInput').value;
-    if (q) {
-        window.location.href = `search.html?q=${encodeURIComponent(q)}`;
-    }
-}
 
 // 切换类别并请求数据
 async function switchCategory(categoryType) {

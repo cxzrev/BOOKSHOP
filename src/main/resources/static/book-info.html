@@ -15,7 +15,7 @@
     <div class="nav-center">
         <div class="search-group">
             <input type="text" id="navSearchInput" placeholder="书名 / 作者 / ISBN">
-            <button onclick="navSearch()">搜索</button>
+            <button onclick="doNavSearch()">搜索</button>
         </div>
     </div>
 
@@ -33,16 +33,62 @@
 
 <script src="js/main.js"></script>
 <script>
-    // 页面加载时，自动获取 URL 中的 id 并请求数据
-    window.onload = function() {
+    window.addEventListener('DOMContentLoaded', async () => {
+        await checkLoginStatus();
+
         const urlParams = new URLSearchParams(window.location.search);
-        const bookId = urlParams.get('id'); // 获取 ?id=xxx
+        const bookId = urlParams.get('id');
         if (bookId) {
-            loadBookDetail(bookId);
+            await loadBookDetail(bookId);
         } else {
-            document.getElementById('bookDetail').innerHTML = "<p>错误：未指定图书ID。</p>";
+            document.getElementById('bookDetail').innerHTML = "<div class='error-msg'>错误：未指定图书ID。</div>";
         }
-    };
+    });
+
+    async function loadBookDetail(id) {
+        const container = document.getElementById('bookDetail');
+        try {
+            const res = await fetch(`/api/book/${id}`);
+            const result = await res.json();
+
+            if (result.code === 200) {
+                const book = result.data;
+                const bid = book.bookId || book.book_id; // ✅ 关键映射
+                const catKey = getCatId(book.category);
+
+                // 详情页配色方案
+                const colors = { 'ML': '#d32f2f', 'ZX': '#fbc02d', 'SH': '#616161', 'ZZ': '#1976d2', 'JJ': '#f57c00', 'JS': '#388e3c', 'default': '#999' };
+
+                container.innerHTML = `
+                <button onclick="window.history.back()" class="back-btn" style="margin-bottom:20px; cursor:pointer;">← 返回</button>
+                <div class="detail-layout" style="display: flex; gap: 40px;">
+                    <div class="detail-left">
+                        <div class="big-cover" style="width: 240px; height: 320px; background-color: ${colors[catKey]}; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 100px; color: white; font-weight: bold; box-shadow: 0 10px 20px rgba(0,0,0,0.1);">
+                            ${book.title[0]}
+                        </div>
+                    </div>
+                    <div class="detail-right">
+                        <h1>${book.title}</h1>
+                        <p>作者：${book.author}</p>
+                        <p>ISBN：${book.isbn || '暂无'}</p>
+                        <p style="font-size: 24px; color: #e4393c; font-weight: bold;">￥${book.price.toFixed(2)}</p>
+                        <p>库存：${book.stock}</p>
+                        <div style="margin: 20px 0; padding: 15px; background: #f5f5f5; border-radius: 8px;">
+                            <strong>简介：</strong><br>${book.description || '暂无简介'}
+                        </div>
+                        <button class="primary-btn"
+                                onclick="addToCart(${bid})"
+                                style="padding: 10px 30px; background: #e4393c; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            加入购物车
+                        </button>
+                    </div>
+                </div>`;
+            }
+        } catch (e) {
+            console.error(e);
+            container.innerHTML = "加载失败";
+        }
+    }
 </script>
 </body>
 </html>

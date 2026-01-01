@@ -15,7 +15,7 @@
     <div class="nav-center">
         <div class="search-group">
             <input type="text" id="navSearchInput" placeholder="书名 / 作者 / ISBN">
-            <button onclick="navSearch()">搜索</button>
+            <button onclick="doNavSearch()">搜索</button>
         </div>
     </div>
 
@@ -35,35 +35,90 @@
         <h3>收货信息</h3>
         <div class="input-group">
             <label>收货地址：</label>
-            <input type="text" id="address" placeholder="请输入详细地址" required> [cite: 204]
+            <input type="text" id="address" placeholder="请输入详细地址" required>
         </div>
         <div class="input-group">
             <label>信用卡号（模拟）：</label>
-            <input type="text" id="creditCard" placeholder="16位卡号" required> [cite: 204]
+            <input type="text" id="creditCard" placeholder="16位卡号" required>
         </div>
-        <button onclick="submitOrder()" class="primary-btn">确认并支付</button> [cite: 205]
+        <button onclick="submitOrder()" class="primary-btn">确认并支付</button>
     </div>
 </main>
 
 <script src="js/main.js"></script>
 <script>
-    // 页面启动检查：必须登录且有货
-    window.onload = async function() {
-        const isLogin = await checkLoginStatus(); // 我们之前在 search 页面写的逻辑
-        const cart = JSON.parse(localStorage.getItem('cart') || '{}');
+    window.addEventListener('DOMContentLoaded', async () => {
+        // 1. 调用统一的状态检查
+        const isLogin = await checkLoginStatus();
+
+        // 2. ✅ 注意：这里的 Key 必须和你详情页存的时候一致 ('book_basket')
+        const basket = JSON.parse(localStorage.getItem('book_basket') || '[]');
 
         if (!isLogin) {
             alert("请先登录再进行结算！");
-            window.location.href = "login.html"; //[cite: 197]
+            window.location.href = "login.html";
             return;
         }
-        if (Object.keys(cart).length === 0) {
-            alert("购物车是空的！");
-            window.location.href = "search.html";
+
+        if (basket.length === 0) {
+            alert("购物篮是空的！");
+            window.location.href = "index.html"; // 既然是空的，回首页
             return;
         }
-        renderOrderReview(); // 渲染预览清单 [cite: 203]
-    };
+
+        renderOrderReview(basket);
+    });
+
+    function renderOrderReview(basket) {
+        const review = document.getElementById('orderReview');
+        let total = 0;
+        let html = '<ul style="list-style:none; padding:0;">';
+
+        basket.forEach(item => {
+            const subtotal = item.price * item.quantity;
+            total += subtotal;
+            html += `<li style="padding:10px; border-bottom:1px solid #eee;">
+                        ${item.title} x ${item.quantity} - ￥${subtotal.toFixed(2)}
+                     </li>`;
+        });
+
+        html += `</ul><p style="text-align:right; font-weight:bold;">总计：￥${total.toFixed(2)}</p>`;
+        review.innerHTML = html;
+    }
+
+    async function submitOrder() {
+        const address = document.getElementById('address').value.trim();
+        const creditCard = document.getElementById('creditCard').value.trim();
+
+        if (!address || !creditCard) {
+            alert("请完善收货信息和支付信息！");
+            return;
+        }
+
+        // 构造 OrderController 接收的数据格式
+        const basket = JSON.parse(localStorage.getItem('book_basket') || '[]');
+        const orderData = {};
+        basket.forEach(item => { orderData[item.bookId] = item.quantity; });
+
+        try {
+            const response = await fetch('/api/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(orderData)
+            });
+
+            if (response.ok) {
+                alert("支付成功！您的订单已生成。");
+                localStorage.removeItem('book_basket'); // 清空本地篮子
+                window.location.href = "index.html";
+            } else {
+                const err = await response.json();
+                alert("下单失败：" + (err.error || "未知错误"));
+            }
+        } catch (e) {
+            alert("网络错误，支付失败");
+        }
+    }
 </script>
 </body>
 </html>

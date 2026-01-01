@@ -15,7 +15,7 @@
     <div class="nav-center">
         <div class="search-group">
             <input type="text" id="navSearchInput" placeholder="书名 / 作者 / ISBN">
-            <button onclick="navSearch()">搜索</button>
+            <button onclick="doNavSearch()">搜索</button>
         </div>
     </div>
 
@@ -44,11 +44,16 @@
 
 <script src="js/main.js"></script>
 <script>
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         const u = document.getElementById('loginUsername').value;
         const p = document.getElementById('loginPassword').value;
-        loginUser(u, p);
+
+        const success = await loginUser(u, p);
+        if (success) {
+            // 登录成功后强制跳转回首页，而不是 search.html
+            window.location.href = "index.html";
+        }
     });
 </script>
 </body>

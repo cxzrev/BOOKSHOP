@@ -15,7 +15,7 @@
     <div class="nav-center">
         <div class="search-group">
             <input type="text" id="navSearchInput" placeholder="书名 / 作者 / ISBN">
-            <button onclick="navSearch()">搜索</button>
+            <button onclick="doNavSearch()">搜索</button>
         </div>
     </div>
 
@@ -41,7 +41,94 @@
 
 <script src="js/main.js"></script>
 <script>
-    window.onload = renderBasket;
+    // basket.html 结尾的脚本
+    async function startBasketPage() {
+        console.log("购物篮页面脚本开始执行...");
+
+        // 1. 同步导航栏状态
+        if (typeof syncUserStatus === 'function') {
+            await syncUserStatus();
+        } else if (typeof checkLoginStatus === 'function') {
+            await checkLoginStatus();
+        }
+
+        // 2. 渲染列表
+        renderBasket();
+    }
+
+    function renderBasket() {
+        console.log("正在读取本地存储并渲染列表...");
+        const container = document.getElementById('basketContent');
+        const summary = document.getElementById('basketSummary');
+
+        // 注意：这里的 Key 必须和 main.js 里的 addToCart 保持一致
+        const basket = JSON.parse(localStorage.getItem('book_basket') || '[]');
+
+        if (basket.length === 0) {
+            container.innerHTML = `<p style="text-align:center; padding:50px;">您的购物篮是空的。</p>`;
+            summary.style.display = 'none';
+            return;
+        }
+
+        summary.style.display = 'block';
+        let total = 0;
+        let html = `
+        <table class="basket-table" style="width:100%; border-collapse: collapse; margin-top:20px;">
+            <tr style="border-bottom: 2px solid #ddd; text-align: left;">
+                <th style="padding:10px;">图书</th>
+                <th>单价</th>
+                <th>数量</th>
+                <th>小计</th>
+                <th>操作</th>
+            </tr>`;
+
+        basket.forEach((item, index) => {
+            const subtotal = item.price * item.quantity;
+            total += subtotal;
+            html += `
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding:15px 10px;">${item.title}</td>
+                <td>￥${item.price.toFixed(2)}</td>
+                <td>
+                    <button onclick="changeQty(${index}, -1)" style="padding:2px 8px;">-</button>
+                    <span style="margin:0 10px; min-width:20px; display:inline-block; text-align:center;">${item.quantity}</span>
+                    <button onclick="changeQty(${index}, 1)" style="padding:2px 8px;">+</button>
+                </td>
+                <td style="color:#e4393c; font-weight:bold;">￥${subtotal.toFixed(2)}</td>
+                <td><button onclick="deleteItem(${index})" style="color:red; background:none; border:none; cursor:pointer;">删除</button></td>
+            </tr>`;
+        });
+
+        html += `</table>`;
+        container.innerHTML = html;
+        document.getElementById('totalPrice').innerText = `￥${total.toFixed(2)}`;
+    }
+
+    // 确保在 DOM 加载完后执行
+    window.addEventListener('DOMContentLoaded', startBasketPage);
+
+    // --- 操作函数 ---
+    window.changeQty = function(index, delta) {
+        let basket = JSON.parse(localStorage.getItem('book_basket'));
+        basket[index].quantity += delta;
+        if (basket[index].quantity <= 0) return deleteItem(index);
+        localStorage.setItem('book_basket', JSON.stringify(basket));
+        renderBasket();
+    };
+
+    window.deleteItem = function(index) {
+        let basket = JSON.parse(localStorage.getItem('book_basket'));
+        basket.splice(index, 1);
+        localStorage.setItem('book_basket', JSON.stringify(basket));
+        renderBasket();
+    };
+
+    window.clearBasket = function() {
+        if (confirm("确定要清空购物篮吗？")) {
+            localStorage.removeItem('book_basket');
+            renderBasket();
+        }
+    };
 </script>
 </body>
 </html>

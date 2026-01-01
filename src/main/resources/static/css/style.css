@@ -67,23 +67,32 @@ button {
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     transition: transform 0.2s;
+    overflow: hidden; /* 确保封面圆角不被切断 */
 }
 
 .mini-book-card:hover { transform: translateY(-5px); }
 
 .mini-cover {
-    height: 120px;
-    background: #f0f0f0;
+    height: 160px;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 40px;
+    font-size: 50px; /* 大字美化 */
     font-weight: bold;
+    color: white; /* 封面字统一白色 */
     border-radius: 8px 8px 0 0;
 }
 
-.mini-info { padding: 8px; text-align: center; }
-.mini-info h4 { font-size: 14px; margin: 5px 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.mini-info { padding: 12px 8px; text-align: center; }
+.mini-info h4 {
+    font-size: 14px;
+    margin: 0;
+    color: #333; /* 深度灰色 */
+    font-weight: 500;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
 .mini-price { color: #e4393c; font-weight: bold; }
 .stock-tip { font-size: 12px; color: red; font-weight: bold; }
 
@@ -329,3 +338,47 @@ button {
     font-size: 12px;
     margin-top: 4px;
 }
+
+/* 强制去掉链接下划线 */
+.mini-book-card a {
+    text-decoration: none !important;
+    color: inherit;
+    dispaly: block;
+}
+.mini-book-card h4 { margin: 10px 0; font-size: 14px; color: #333; }
+
+.cat-ML { background-color: #e53935; color: white; } /* 马列-红 */
+.cat-ZX { background-color: #fbc02d; color: white; } /* 哲学-黄 */
+.cat-SH { background-color: #616161; color: white; } /* 社科-灰 */
+.cat-ZZ { background-color: #1e88e5; color: white; } /* 政治-蓝 */
+.cat-JJ { background-color: #fb8c00; color: white; } /* 经济-橙 */
+.cat-JS { background-color: #43a047; color: white; } /* 军事-绿 */
+
+/* 详情页 */
+.detail-layout { display: flex; gap: 40px; margin-top: 30px; align-items: flex-start; }
+.big-cover {
+    width: 240px; height: 320px;
+    display: flex; justify-content: center; align-items: center;
+    font-size: 100px; font-weight: bold; color: white;
+    border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+.detail-right h1 { margin-top: 0; color: #222; }
+.detail-price { font-size: 28px; color: #e4393c; font-weight: bold; margin: 20px 0; }
+
+/* 解决下划线和颜色问题 */
+.mini-book-card a, .mini-book-card a:hover {
+    text-decoration: none !important;
+    outline: none !important;
+}
+.no-underline {
+    text-decoration: none !important;
+    border-bottom: none !important;
+    color: #333 !important;
+}
+/* 封面配色样式 */
+.cat-bg-ML { background-color: #d32f2f !important; }
+.cat-bg-ZX { background-color: #fbc02d !important; }
+.cat-bg-SH { background-color: #616161 !important; }
+.cat-bg-ZZ { background-color: #1976d2 !important; }
+.cat-bg-JJ { background-color: #f57c00 !important; }
+.cat-bg-JS { background-color: #388e3c !important; }

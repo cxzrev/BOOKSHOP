@@ -15,7 +15,7 @@
   <div class="nav-center">
     <div class="search-group">
       <input type="text" id="navSearchInput" placeholder="书名 / 作者 / ISBN">
-      <button onclick="navSearch()">搜索</button>
+      <button onclick="doNavSearch()">搜索</button>
     </div>
   </div>
 
@@ -48,12 +48,14 @@
 
 <script src="js/main.js"></script>
 <script>
-  window.onload = function() {
-    updateNavUI(); // 更新导航栏用户状态
+  window.addEventListener('load', async () => {
+    await syncUserStatus(); // ✅ 调用统一的函数名
     const urlParams = new URLSearchParams(window.location.search);
     const cat = urlParams.get('type') || 'all';
-    switchCategory(cat);
-  };
+    if (typeof switchCategory === 'function') {
+      switchCategory(cat);
+    }
+  });
 </script>
 </body>
 </html>

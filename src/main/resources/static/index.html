@@ -9,16 +9,14 @@
 <nav class="navbar">
     <div class="nav-left">
         <a href="index.html" class="nav-item">首页</a>
-        <a href="category.html" class="nav-item">全部分类</a>
+        <a href="category.html?type=all" class="nav-item">全部分类</a>
     </div>
-
     <div class="nav-center">
         <div class="search-group">
             <input type="text" id="navSearchInput" placeholder="书名 / 作者 / ISBN">
-            <button onclick="navSearch()">搜索</button>
+            <button onclick="doNavSearch()">搜索</button>
         </div>
     </div>
-
     <div class="nav-right" id="userArea">
         <a href="login.html" class="nav-item">登录</a>
         <a href="register.html" class="nav-item">注册</a>
@@ -34,60 +32,9 @@
     </header>
 
     <section id="homeCategorySections" class="container">
+        <p style="text-align: center; color: #999;"></p>
     </section>
 </main>
-
-<script src="js/main.js"></script>
-
-<section class="home-categories">
-    <div class="cat-row" id="row-marxism">
-        <div class="cat-header">
-            <span>马列毛邓、思想理论</span>
-            <a href="category.html?type=marxism">探索更多 ></a>
-        </div>
-        <div class="book-scroller" id="list-marxism"></div>
-    </div>
-
-    <div class="cat-row" id="row-philosophy">
-        <div class="cat-header">
-            <span>哲学宗教</span>
-            <a href="category.html?type=philosophy">探索更多 ></a>
-        </div>
-        <div class="book-scroller" id="list-philosophy"></div>
-    </div>
-
-    <div class="cat-row" id="row-social">
-        <div class="cat-header">
-            <span>社会科学总论</span>
-            <a href="category.html?type=social">探索更多 ></a>
-        </div>
-        <div class="book-scroller" id="list-social"></div>
-    </div>
-
-    <div class="cat-row" id="row-politics">
-        <div class="cat-header">
-            <span>政治、法律</span>
-            <a href="category.html?type=politics">探索更多 ></a>
-        </div>
-        <div class="book-scroller" id="list-politics"></div>
-    </div>
-
-    <div class="cat-row" id="row-economy">
-        <div class="cat-header">
-            <span>经济</span>
-            <a href="category.html?type=economy">探索更多 ></a>
-        </div>
-        <div class="book-scroller" id="list-economy"></div>
-    </div>
-
-    <div class="cat-row" id="row-military">
-        <div class="cat-header">
-            <span>军事</span>
-            <a href="category.html?type=military">探索更多 ></a>
-        </div>
-        <div class="book-scroller" id="list-military"></div>
-    </div>
-</section>
 
 <script src="js/main.js"></script>
 </body>

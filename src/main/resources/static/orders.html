@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>我的订单 - 悦读网上书店</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .address-group { margin-bottom: 30px; }
+        .address-title { border-bottom: 2px solid #333; padding-bottom: 5px; margin-bottom: 15px; color: #555; }
+        .order-card {
+            position: relative; border: 1px solid #ddd; padding: 15px;
+            margin-bottom: 15px; border-radius: 8px; background: #fff;
+        }
+        .status-tag {
+            position: absolute; top: 10px; right: 10px;
+            color: #52c41a; font-weight: bold; border: 1px solid #52c41a;
+            padding: 2px 8px; border-radius: 4px; font-size: 12px;
+        }
+        .item-row { display: flex; justify-content: space-between; margin: 5px 0; color: #666; }
+        .order-total { text-align: right; margin-top: 10px; font-weight: bold; color: #e4393c; }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <div class="nav-left"><a href="index.html">首页</a></div>
+    <div class="nav-right" id="userArea"></div>
+</nav>
+
+<main class="container">
+    <h2>历史订单</h2>
+    <div id="orderContainer">正在加载订单...</div>
+</main>
+
+<script src="js/main.js"></script>
+<script>
+    window.addEventListener('DOMContentLoaded', async () => {
+        console.log("页面已加载，开始检查登录状态...");
+        const isLogin = await checkLoginStatus(); // 确保 main.js 里的这个函数有 return true
+        if (!isLogin) {
+            alert("请先登录！");
+            window.location.href = "login.html";
+            return;
+        }
+        loadOrders();
+    });
+
+    async function loadOrders() {
+        const container = document.getElementById('orderContainer');
+        console.log("准备请求后端接口: /api/orders");
+
+        try {
+            const res = await fetch('/api/orders');
+            console.log("后端响应状态码:", res.status);
+
+            if (res.status === 401) {
+                container.innerHTML = "<p>未登录或登录已失效，请重新登录。</p>";
+                return;
+            }
+
+            if (!res.ok) {
+                const errorText = await res.text();
+                console.error("后端报错内容:", errorText);
+                container.innerHTML = `<p style="color:red;">服务器报错 (状态码: ${res.status})</p>`;
+                return;
+            }
+
+            const rawData = await res.json();
+            console.log("获取到的原始订单数据:", rawData);
+
+            if (!rawData || rawData.length === 0) {
+                container.innerHTML = "<p>暂无订单记录。</p>";
+                return;
+            }
+
+            // 执行聚合
+            const orders = groupByOrderId(rawData);
+            console.log("聚合后的订单列表:", orders);
+
+            let html = '';
+            orders.forEach(order => {
+                html += `
+                    <div class="order-card" style="position: relative; border: 1px solid #ddd; padding: 20px; margin-bottom: 20px; border-radius: 8px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <span class="status-tag" style="position: absolute; top: 15px; right: 15px; color: #28a745; border: 1px solid #28a745; padding: 2px 8px; border-radius: 4px; font-weight: bold; background: #f6ffed;">已支付</span>
+                        <div style="color: #666; font-size: 14px; margin-bottom: 10px;">订单编号：${order.id}</div>
+                        <div style="border-top: 1px solid #eee; padding-top: 10px;">
+                            ${order.items.map(item => `
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                    <span>${item.title}</span>
+                                    <span style="color: #888;">x${item.quantity}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div style="text-align: right; margin-top: 15px; font-weight: bold; color: #e4393c; font-size: 1.2em;">
+                            实付总额：￥${Number(order.total).toFixed(2)}
+                        </div>
+                    </div>`;
+            });
+            container.innerHTML = html;
+
+        } catch (e) {
+            console.error("JavaScript 执行异常:", e);
+            container.innerHTML = `<p style="color:red;">数据解析失败，请按 F12 查看控制台错误。</p>`;
+        }
+    }
+
+    function groupByOrderId(items) {
+        const map = {};
+        items.forEach(item => {
+            // 兼容各种可能的字段名
+            const oid = item.orderId || item.ORDERID || item.order_id;
+            if (!oid) return;
+
+            if (!map[oid]) {
+                map[oid] = {
+                    id: oid,
+                    total: parseFloat(item.totalPrice || item.TOTALPRICE || item.total_price || 0),
+                    items: []
+                };
+            }
+            map[oid].items.push({
+                title: item.title || item.TITLE || "未知书名",
+                quantity: item.quantity || item.QUANTITY || 0
+            });
+        });
+        return Object.values(map);
+    }
+</script>
+</body>
+</html>
